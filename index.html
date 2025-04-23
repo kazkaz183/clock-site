@@ -1,74 +1,4 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>時計</title>
-  <style>
-    body {
-      background-color: #000;
-      color: #0f0;
-      font-family: monospace;
-      text-align: center;
-      margin-top: 40px;
-    }
 
-    canvas {
-      background-color: #fff;
-      border-radius: 50%;
-      display: block;
-      margin: 30px auto;
-    }
-
-    #digital {
-      font-size: 48px;
-      display: none;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 18px;
-      background: #0f0;
-      color: #000;
-      border: none;
-      cursor: pointer;
-      margin-top: 20px;
-    }
-  
-  #controls {
-    margin-top: 20px;
-  }
-  select {
-    font-size: 16px;
-    padding: 5px;
-    margin: 5px;
-  }
-
-</style>
-</head>
-<body>
-
-  <div id="controls">
-    背景色:
-    <select onchange="changeBackground(this.value)">
-      <option value="#000">黒</option>
-      <option value="#fff">白</option>
-      <option value="#003366">ネイビー</option>
-    </select>
-
-    文字色:
-    <select onchange="changeColor(this.value)">
-      <option value="#0f0">緑</option>
-      <option value="#f00">赤</option>
-      <option value="#00f">青</option>
-    </select>
-
-    フォント:
-    <select onchange="changeFont(this.value)">
-      <option value="monospace">等幅</option>
-      <option value="serif">明朝体</option>
-      <option value="sans-serif">ゴシック体</option>
-    </select>
-  </div>
 
   <h1>時計</h1>
   <canvas id="analog" width="300" height="300"></canvas>
@@ -159,6 +89,13 @@
     }
 
     
+    
+    function toggleSettings() {
+      const panel = document.getElementById("settings-panel");
+      panel.classList.toggle("open");
+    }
+
+
     function changeBackground(color) {
       document.body.style.backgroundColor = color;
     }
