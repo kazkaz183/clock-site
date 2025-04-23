@@ -1,34 +1,113 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>リアルタイム時計サイト｜スマホ対応のWeb時計</title>
-  <meta name="description" content="このWebサイトでは、今の時刻をリアルタイムで表示するシンプルなデジタル時計を提供しています。スマホやパソコンからアクセスできます。">
+  <title>アナログ時計サイト</title>
+  <meta name="description" content="リアルタイムで動くアナログ時計を表示するWebサイトです。スマホやPCからアクセスできます。">
   <style>
     body {
-      font-family: sans-serif;
-      background-color: #000;
-      color: #0f0;
+      margin: 0;
+      background-color: #111;
+      color: #fff;
       text-align: center;
-      font-size: 64px;
-      margin-top: 20%;
+      font-family: sans-serif;
+    }
+
+    h1 {
+      margin-top: 30px;
+    }
+
+    canvas {
+      background-color: #fff;
+      border-radius: 50%;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <div id="clock">--:--:--</div>
+  <h1>アナログ時計</h1>
+  <canvas id="clock" width="300" height="300"></canvas>
 
   <script>
-    function updateClock() {
-      const now = new Date();
-      const hours = now.getHours().toString().padStart(2, '0');
-      const minutes = now.getMinutes().toString().padStart(2, '0');
-      const seconds = now.getSeconds().toString().padStart(2, '0');
-      document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+    const canvas = document.getElementById("clock");
+    const ctx = canvas.getContext("2d");
+    const radius = canvas.height / 2;
+    ctx.translate(radius, radius);
+
+    function drawClock() {
+      drawFace(ctx, radius);
+      drawNumbers(ctx, radius);
+      drawTime(ctx, radius);
     }
 
-    setInterval(updateClock, 1000);
-    updateClock(); // 初期表示
+    function drawFace(ctx, radius) {
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = 'white';
+      ctx.fill();
+
+      const grad = ctx.createRadialGradient(0, 0, radius * 0.95, 0, 0, radius * 1.05);
+      grad.addColorStop(0, '#333');
+      grad.addColorStop(0.5, 'white');
+      grad.addColorStop(1, '#333');
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = radius * 0.1;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(0, 0, radius * 0.05, 0, 2 * Math.PI);
+      ctx.fillStyle = '#333';
+      ctx.fill();
+    }
+
+    function drawNumbers(ctx, radius) {
+      ctx.font = radius * 0.15 + "px arial";
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "center";
+      for (let num = 1; num <= 12; num++) {
+        const ang = num * Math.PI / 6;
+        ctx.rotate(ang);
+        ctx.translate(0, -radius * 0.85);
+        ctx.rotate(-ang);
+        ctx.fillText(num.toString(), 0, 0);
+        ctx.rotate(ang);
+        ctx.translate(0, radius * 0.85);
+        ctx.rotate(-ang);
+      }
+    }
+
+    function drawTime(ctx, radius) {
+      const now = new Date();
+      let hour = now.getHours();
+      let minute = now.getMinutes();
+      let second = now.getSeconds();
+
+      hour = hour % 12;
+      hour = (hour * Math.PI / 6) +
+             (minute * Math.PI / (6 * 60)) +
+             (second * Math.PI / (360 * 60));
+      drawHand(ctx, hour, radius * 0.5, radius * 0.07);
+
+      minute = (minute * Math.PI / 30) + (second * Math.PI / (30 * 60));
+      drawHand(ctx, minute, radius * 0.8, radius * 0.07);
+
+      second = second * Math.PI / 30;
+      drawHand(ctx, second, radius * 0.9, radius * 0.02, 'red');
+    }
+
+    function drawHand(ctx, pos, length, width, color = '#333') {
+      ctx.beginPath();
+      ctx.lineWidth = width;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = color;
+      ctx.moveTo(0, 0);
+      ctx.rotate(pos);
+      ctx.lineTo(0, -length);
+      ctx.stroke();
+      ctx.rotate(-pos);
+    }
+
+    setInterval(drawClock, 1000);
   </script>
 </body>
 </html>
