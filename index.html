@@ -1,134 +1,246 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>時計</title>
+  
+<style>
+  body {
+    background-color: #000;
+    color: #0f0;
+    font-family: monospace;
+    text-align: center;
+    margin-top: 40px;
+  }
+
+  canvas {
+    background-color: #fff;
+    border-radius: 50%;
+    display: block;
+    margin: 30px auto;
+  }
+
+  #digital {
+    font-size: 48px;
+    display: none;
+  }
+
+  button {
+    padding: 10px 20px;
+    font-size: 18px;
+    background: #0f0;
+    color: #000;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+
+  #menu-icon {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 30px;
+    height: 25px;
+    cursor: pointer;
+    z-index: 1000;
+  }
+  #menu-icon div {
+    height: 5px;
+    background: #0f0;
+    margin: 4px 0;
+    border-radius: 2px;
+  }
+  #settings-panel {
+    position: fixed;
+    top: 0;
+    right: -250px;
+    width: 250px;
+    height: 100%;
+    background-color: #222;
+    color: #fff;
+    padding: 20px;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.5);
+    transition: right 0.3s ease;
+    z-index: 999;
+  }
+  #settings-panel.open {
+    right: 0;
+  }
+  #settings-panel label {
+    display: block;
+    margin-top: 15px;
+  }
+  #settings-panel select {
+    width: 100%;
+    padding: 5px;
+    font-size: 14px;
+  }
+</style>
+
+</head>
+<body>
+  
+<div id="menu-icon" onclick="toggleSettings()">
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
+
+<div id="settings-panel">
+  <h3>設定</h3>
+
+  <label>背景色:
+    <select onchange="changeBackground(this.value)">
+      <option value="#000">黒</option>
+      <option value="#fff">白</option>
+      <option value="#003366">ネイビー</option>
+    </select>
+  </label>
+
+  <label>文字色:
+    <select onchange="changeColor(this.value)">
+      <option value="#0f0">緑</option>
+      <option value="#f00">赤</option>
+      <option value="#00f">青</option>
+    </select>
+  </label>
+
+  <label>フォント:
+    <select onchange="changeFont(this.value)">
+      <option value="monospace">等幅</option>
+      <option value="serif">明朝体</option>
+      <option value="sans-serif">ゴシック体</option>
+    </select>
+  </label>
+</div>
+
 
   <h1>時計</h1>
   <canvas id="analog" width="300" height="300"></canvas>
   <div id="digital">--:--:--</div>
   <button onclick="toggleClock()">デジタルに切り替え</button>
 
-  <script>
+  
+<script>
+  const canvas = document.getElementById("analog");
+  const ctx = canvas.getContext("2d");
+  const radius = canvas.height / 2;
+  ctx.translate(radius, radius);
+
+  function drawClock() {
+    drawFace(ctx, radius);
+    drawNumbers(ctx, radius);
+    drawTime(ctx, radius);
+  }
+
+  function drawFace(ctx, radius) {
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+    const grad = ctx.createRadialGradient(0, 0, radius * 0.95, 0, 0, radius * 1.05);
+    grad.addColorStop(0, '#333');
+    grad.addColorStop(0.5, 'white');
+    grad.addColorStop(1, '#333');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = radius * 0.1;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(0, 0, radius * 0.05, 0, 2 * Math.PI);
+    ctx.fillStyle = '#333';
+    ctx.fill();
+  }
+
+  function drawNumbers(ctx, radius) {
+    ctx.font = radius * 0.15 + "px arial";
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "center";
+    for (let num = 1; num <= 12; num++) {
+      const ang = num * Math.PI / 6;
+      ctx.rotate(ang);
+      ctx.translate(0, -radius * 0.85);
+      ctx.rotate(-ang);
+      ctx.fillText(num.toString(), 0, 0);
+      ctx.rotate(ang);
+      ctx.translate(0, radius * 0.85);
+      ctx.rotate(-ang);
+    }
+  }
+
+  function drawTime(ctx, radius) {
+    const now = new Date();
+    let hour = now.getHours();
+    let minute = now.getMinutes();
+    let second = now.getSeconds();
+    hour = hour % 12;
+    hour = (hour * Math.PI / 6) +
+           (minute * Math.PI / (6 * 60)) +
+           (second * Math.PI / (360 * 60));
+    drawHand(ctx, hour, radius * 0.5, radius * 0.07);
+    minute = (minute * Math.PI / 30) + (second * Math.PI / (30 * 60));
+    drawHand(ctx, minute, radius * 0.8, radius * 0.07);
+    second = second * Math.PI / 30;
+    drawHand(ctx, second, radius * 0.9, radius * 0.02, 'red');
+  }
+
+  function drawHand(ctx, pos, length, width, color = '#333') {
+    ctx.beginPath();
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = color;
+    ctx.moveTo(0, 0);
+    ctx.rotate(pos);
+    ctx.lineTo(0, -length);
+    ctx.stroke();
+    ctx.rotate(-pos);
+  }
+
+  function updateDigital() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    document.getElementById("digital").textContent = `${h}:${m}:${s}`;
+  }
+
+  function toggleClock() {
     const canvas = document.getElementById("analog");
-    const ctx = canvas.getContext("2d");
-    const radius = canvas.height / 2;
-    ctx.translate(radius, radius);
-
-    function drawClock() {
-      drawFace(ctx, radius);
-      drawNumbers(ctx, radius);
-      drawTime(ctx, radius);
+    const digital = document.getElementById("digital");
+    const button = document.querySelector("button");
+    if (canvas.style.display !== "none") {
+      canvas.style.display = "none";
+      digital.style.display = "block";
+      button.textContent = "アナログ";
+    } else {
+      canvas.style.display = "block";
+      digital.style.display = "none";
+      button.textContent = "デジタル";
     }
+  }
 
-    function drawFace(ctx, radius) {
-      ctx.beginPath();
-      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-      ctx.fillStyle = 'white';
-      ctx.fill();
-      const grad = ctx.createRadialGradient(0, 0, radius * 0.95, 0, 0, radius * 1.05);
-      grad.addColorStop(0, '#333');
-      grad.addColorStop(0.5, 'white');
-      grad.addColorStop(1, '#333');
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = radius * 0.1;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(0, 0, radius * 0.05, 0, 2 * Math.PI);
-      ctx.fillStyle = '#333';
-      ctx.fill();
-    }
+  function toggleSettings() {
+    const panel = document.getElementById("settings-panel");
+    panel.classList.toggle("open");
+  }
 
-    function drawNumbers(ctx, radius) {
-      ctx.font = radius * 0.15 + "px arial";
-      ctx.textBaseline = "middle";
-      ctx.textAlign = "center";
-      for (let num = 1; num <= 12; num++) {
-        const ang = num * Math.PI / 6;
-        ctx.rotate(ang);
-        ctx.translate(0, -radius * 0.85);
-        ctx.rotate(-ang);
-        ctx.fillText(num.toString(), 0, 0);
-        ctx.rotate(ang);
-        ctx.translate(0, radius * 0.85);
-        ctx.rotate(-ang);
-      }
-    }
+  function changeBackground(color) {
+    document.body.style.backgroundColor = color;
+  }
 
-    function drawTime(ctx, radius) {
-      const now = new Date();
-      let hour = now.getHours();
-      let minute = now.getMinutes();
-      let second = now.getSeconds();
+  function changeColor(color) {
+    document.body.style.color = color;
+  }
 
-      hour = hour % 12;
-      hour = (hour * Math.PI / 6) +
-             (minute * Math.PI / (6 * 60)) +
-             (second * Math.PI / (360 * 60));
-      drawHand(ctx, hour, radius * 0.5, radius * 0.07);
-      minute = (minute * Math.PI / 30) + (second * Math.PI / (30 * 60));
-      drawHand(ctx, minute, radius * 0.8, radius * 0.07);
-      second = second * Math.PI / 30;
-      drawHand(ctx, second, radius * 0.9, radius * 0.02, 'red');
-    }
+  function changeFont(font) {
+    document.body.style.fontFamily = font;
+  }
 
-    function drawHand(ctx, pos, length, width, color = '#333') {
-      ctx.beginPath();
-      ctx.lineWidth = width;
-      ctx.lineCap = "round";
-      ctx.strokeStyle = color;
-      ctx.moveTo(0, 0);
-      ctx.rotate(pos);
-      ctx.lineTo(0, -length);
-      ctx.stroke();
-      ctx.rotate(-pos);
-    }
+  setInterval(() => {
+    drawClock();
+    updateDigital();
+  }, 1000);
+</script>
 
-    function updateDigital() {
-      const now = new Date();
-      const h = String(now.getHours()).padStart(2, '0');
-      const m = String(now.getMinutes()).padStart(2, '0');
-      const s = String(now.getSeconds()).padStart(2, '0');
-      document.getElementById("digital").textContent = `${h}:${m}:${s}`;
-    }
-
-    
-    
-    function toggleSettings() {
-      const panel = document.getElementById("settings-panel");
-      panel.classList.toggle("open");
-    }
-
-
-    function changeBackground(color) {
-      document.body.style.backgroundColor = color;
-    }
-
-    function changeColor(color) {
-      document.body.style.color = color;
-    }
-
-    function changeFont(font) {
-      document.body.style.fontFamily = font;
-    }
-
-
-    setInterval(() => {
-      drawClock();
-      updateDigital();
-    }, 1000);
-
-    function toggleClock() {
-      const canvas = document.getElementById("analog");
-      const digital = document.getElementById("digital");
-      const button = document.querySelector("button");
-
-      if (canvas.style.display !== "none") {
-        canvas.style.display = "none";
-        digital.style.display = "block";
-        button.textContent = "アナログ";
-      } else {
-        canvas.style.display = "block";
-        digital.style.display = "none";
-        button.textContent = "デジタル";
-      }
-    }
-  </script>
 </body>
 </html>
