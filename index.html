@@ -33,9 +33,43 @@
       cursor: pointer;
       margin-top: 20px;
     }
-  </style>
+  
+  #controls {
+    margin-top: 20px;
+  }
+  select {
+    font-size: 16px;
+    padding: 5px;
+    margin: 5px;
+  }
+
+</style>
 </head>
 <body>
+
+  <div id="controls">
+    背景色:
+    <select onchange="changeBackground(this.value)">
+      <option value="#000">黒</option>
+      <option value="#fff">白</option>
+      <option value="#003366">ネイビー</option>
+    </select>
+
+    文字色:
+    <select onchange="changeColor(this.value)">
+      <option value="#0f0">緑</option>
+      <option value="#f00">赤</option>
+      <option value="#00f">青</option>
+    </select>
+
+    フォント:
+    <select onchange="changeFont(this.value)">
+      <option value="monospace">等幅</option>
+      <option value="serif">明朝体</option>
+      <option value="sans-serif">ゴシック体</option>
+    </select>
+  </div>
+
   <h1>時計</h1>
   <canvas id="analog" width="300" height="300"></canvas>
   <div id="digital">--:--:--</div>
@@ -123,6 +157,20 @@
       const s = String(now.getSeconds()).padStart(2, '0');
       document.getElementById("digital").textContent = `${h}:${m}:${s}`;
     }
+
+    
+    function changeBackground(color) {
+      document.body.style.backgroundColor = color;
+    }
+
+    function changeColor(color) {
+      document.body.style.color = color;
+    }
+
+    function changeFont(font) {
+      document.body.style.fontFamily = font;
+    }
+
 
     setInterval(() => {
       drawClock();
